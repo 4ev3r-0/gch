@@ -1,0 +1,5 @@
+local git = require("src.git")
+local analyzer = require("src.analyzer")
+local formatter = require("src.formatter")
+local clipboard = require("src.clipboard")
+local config = require("src.config")
