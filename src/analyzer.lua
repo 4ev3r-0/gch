@@ -9,7 +9,7 @@ local function match_any(line,list)
 	end
 end
 
-function analizer.analyze(diff)
+function analyzer.analyze(diff)
 	local parsed = diff_parser.parse(diff)
 	local result = {}
 
