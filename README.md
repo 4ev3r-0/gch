@@ -60,3 +60,7 @@ Internal logic changes
 Multiple common languages via heuristics
 ```
 
+###### About the nul file
+```text
+i dont know where it came from or why it keeps reapearing, i kinda gave up on figuring out because this project is litterally just to keep me sane from things
+```
