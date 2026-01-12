@@ -6,7 +6,7 @@ local config = require("src.config")
 
 git.ensure_repo()
 
-local diff = et.get_diff(config.staged_only)
+local diff = git.get_diff(config.staged_only)
 local changes = analyzer.analyze(diff)
 local output = formatter.render(changes)
 print(output)

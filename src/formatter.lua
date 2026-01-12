@@ -1,52 +1,78 @@
 local M = {}
-local function folder(path)
-	return path:match("(.+)/") or "."
+
+local function basename(path)
+    return path:match("([^/]+)$") or path
 end
 
+local function uniq(list)
+    local seen, out = {}, {}
+    for _, v in ipairs(list) do
+        if not seen[v] then
+            seen[v] = true
+            table.insert(out, v)
+        end
+    end
+    return out
+end
+
+local function trim_to_limit(text, limit)
+    if #text <= limit then return text end
+    return text:sub(1, limit - 1) .. "…"
+end
 
 function M.render(changes)
-    local out = {}
-    table.insert(out, "=== CHANGE SUMMARY ===\n")
-
-    local folders = {}
+    local files = {}
+    local verbs = {}
+    local description = {}
 
     for file, data in pairs(changes) do
-        local f = folder(file)
-        folders[f] = folders[f] or {}
-        table.insert(folders[f], { file = file, data = data })
-    end
+        table.insert(files, basename(file))
 
-    for f, files in pairs(folders) do
-        table.insert(out, f .. "/")
-        for _, item in ipairs(files) do
-            local d = item.data
-            table.insert(out, "  " .. item.file)
-
-            if #d.added.classes > 0 then
-                table.insert(out, "    + classes: " .. table.concat(d.added.classes, ", "))
-            end
-            if #d.added.funcs > 0 then
-                table.insert(out, "    + functions: " .. table.concat(d.added.funcs, ", "))
-            end
-            if #d.removed.classes > 0 then
-                table.insert(out, "    - classes: " .. table.concat(d.removed.classes, ", "))
-            end
-            if #d.removed.funcs > 0 then
-                table.insert(out, "    - functions: " .. table.concat(d.removed.funcs, ", "))
-            end
-            if d.logic then
-                table.insert(out, "    ~ internal logic changes")
-            end
+        if #data.added.classes > 0 or #data.added.funcs > 0 then
+            table.insert(verbs, "add")
         end
-        table.insert(out, "")
+        if #data.removed.classes > 0 or #data.removed.funcs > 0 then
+            table.insert(verbs, "remove")
+        end
+        if data.logic then
+            table.insert(verbs, "update")
+        end
+
+        -- DESCRIPTION bullets
+        table.insert(description, "- " .. file)
+
+        if #data.added.classes > 0 then
+            table.insert(description, "  - add classes: " .. table.concat(data.added.classes, ", "))
+        end
+        if #data.added.funcs > 0 then
+            table.insert(description, "  - add functions: " .. table.concat(data.added.funcs, ", "))
+        end
+        if #data.removed.classes > 0 then
+            table.insert(description, "  - remove classes: " .. table.concat(data.removed.classes, ", "))
+        end
+        if #data.removed.funcs > 0 then
+            table.insert(description, "  - remove functions: " .. table.concat(data.removed.funcs, ", "))
+        end
+        if data.logic then
+            table.insert(description, "  - update internal logic")
+        end
     end
 
-    table.insert(out, "=== COMMIT MESSAGE TEMPLATE ===\n")
-    table.insert(out, "feat: \n")
-    table.insert(out, "Details:")
-    table.insert(out, table.concat(out, "\n"))
+    files = uniq(files)
+    verbs = uniq(verbs)
 
-    return table.concat(out, "\n")
+    local summary = table.concat(verbs, "/") ..
+        " " .. table.concat(files, ", ")
+
+    summary = trim_to_limit(summary, 72)
+
+    return table.concat({
+        "SUMMARY:",
+        summary,
+        "",
+        "DESCRIPTION:",
+        table.concat(description, "\n")
+    }, "\n")
 end
 
 return M

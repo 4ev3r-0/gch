@@ -8,7 +8,7 @@ local function run(cmd)
 end
 
 function git.ensure_repo() -- makes sure you are in a propper repo
-	if not run("git rev-parse --is-inside-working-tree 2>nul"):match("true") then
+	if not run("git rev-parse --is-inside-work-tree 2>nul"):match("true") then
 		error("not inside of a git repo, please insure you actually made the initial creation or you are in the correct directory")
 	end
 end
